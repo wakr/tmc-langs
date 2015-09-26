@@ -10,9 +10,18 @@ import fi.helsinki.cs.tmc.langs.java.exception.TestRunnerException;
 import fi.helsinki.cs.tmc.langs.java.exception.TestScannerException;
 import fi.helsinki.cs.tmc.langs.java.maven.MavenStudentFilePolicy;
 import fi.helsinki.cs.tmc.langs.java.testscanner.TestScanner;
+
+import org.gradle.tooling.BuildLauncher;
+import org.gradle.tooling.GradleConnector;
+import org.gradle.tooling.ProgressListener;
+import org.gradle.tooling.ProjectConnection;
+import org.gradle.tooling.model.GradleProject;
+import org.gradle.tooling.model.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,18 +35,49 @@ public class GradlePlugin extends AbstractJavaPlugin {
     private static final Path BUILD_FILE = Paths.get("build.gradle");
     private static final Path TEST_FOLDER = Paths.get("src");
 
+    private static final String BUILD_WO_TESTS = "clean build -x test";
+
+
     public GradlePlugin() {
         super(TEST_FOLDER, new StudentFileAwareSubmissionProcessor(), new TestScanner());
     }
 
     @Override
     protected ClassPath getProjectClassPath(Path path) throws IOException {
+        // build/classes/*
         return null;
     }
 
     @Override
     protected CompileResult build(Path projectRootPath) {
-        return null;
+        log.info("Building gradle project at {}", projectRootPath);
+
+        ProjectConnection connection = GradleConnector.newConnector()
+                .forProjectDirectory(projectRootPath.toFile())
+                .connect();
+
+        try {
+            BuildLauncher build = connection.newBuild();
+
+            build.forTasks("test");
+
+            ByteArrayOutputStream outBuf = new ByteArrayOutputStream();
+            ByteArrayOutputStream errBuf = new ByteArrayOutputStream();
+
+            build.setStandardOutput(outBuf);
+            build.run();
+
+
+            System.out.println(errBuf);
+            System.out.println(outBuf);
+
+        } finally {
+            if(connection != null) {
+                connection.close();
+            }
+        }
+
+        return new CompileResult(1, new byte[]{}, new byte[]{});
     }
 
     @Override
