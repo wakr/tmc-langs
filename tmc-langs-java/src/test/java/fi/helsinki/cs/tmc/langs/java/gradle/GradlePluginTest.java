@@ -7,6 +7,7 @@ import fi.helsinki.cs.tmc.langs.utils.TestUtils;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -40,16 +41,23 @@ public class GradlePluginTest {
 
     @Test
     public void testCheckCodeStyleWithUntestableProject() {
-        File projectToTest = new File("src/test/resources/dummy_project/");
+        File projectToTest = TestUtils.getPath(getClass(), "dummy_project").toFile();
         ValidationResult result = gradlePlugin.checkCodeStyle(projectToTest.toPath());
         assertNull(result);
     }
 
     @Test
     public void testPassingGradleBuild(){
-        Path project = TestUtils.getPath(getClass(), "gradle_failing_one");
+        Path project = TestUtils.getPath(getClass(), "gradle_compiling");
         CompileResult result = gradlePlugin.build(project);
         assertEquals("Compile status should be 0 when build passes", 0, result.getStatusCode());
+    }
+
+    @Test
+    public void testFailingGradleBuild() throws IOException {
+        Path project = TestUtils.getPath(getClass(), "gradle_not_compiling");
+        CompileResult result = gradlePlugin.build(project);
+        assertEquals("Compile status should be 1 when build fails", 1, result.getStatusCode());
     }
 
 

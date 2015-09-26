@@ -35,9 +35,6 @@ public class GradlePlugin extends AbstractJavaPlugin {
     private static final Path BUILD_FILE = Paths.get("build.gradle");
     private static final Path TEST_FOLDER = Paths.get("src");
 
-    private static final String BUILD_WO_TESTS = "clean build -x test";
-
-
     public GradlePlugin() {
         super(TEST_FOLDER, new StudentFileAwareSubmissionProcessor(), new TestScanner());
     }
@@ -55,29 +52,29 @@ public class GradlePlugin extends AbstractJavaPlugin {
         ProjectConnection connection = GradleConnector.newConnector()
                 .forProjectDirectory(projectRootPath.toFile())
                 .connect();
+        ByteArrayOutputStream outBuf = new ByteArrayOutputStream();
+        ByteArrayOutputStream errBuf = new ByteArrayOutputStream();
+        int buildResult = 1;
 
         try {
             BuildLauncher build = connection.newBuild();
 
-            build.forTasks("test");
-
-            ByteArrayOutputStream outBuf = new ByteArrayOutputStream();
-            ByteArrayOutputStream errBuf = new ByteArrayOutputStream();
+            build.forTasks("build");
+            build.withArguments("-x", "test");
 
             build.setStandardOutput(outBuf);
+            build.setStandardError(errBuf);
             build.run();
 
-
-            System.out.println(errBuf);
-            System.out.println(outBuf);
-
+            buildResult = 0;
+        } catch (Exception ex){
+            buildResult = 1;
         } finally {
             if(connection != null) {
                 connection.close();
             }
         }
-
-        return new CompileResult(1, new byte[]{}, new byte[]{});
+        return new CompileResult(buildResult, outBuf.toByteArray(), errBuf.toByteArray());
     }
 
     @Override
