@@ -9,6 +9,7 @@ import fi.helsinki.cs.tmc.langs.java.exception.TestRunnerException;
 import fi.helsinki.cs.tmc.langs.java.exception.TestScannerException;
 import fi.helsinki.cs.tmc.langs.java.testscanner.TestScanner;
 
+import jdk.nashorn.internal.objects.NativeRegExp;
 import org.apache.maven.cli.MavenCli;
 
 import org.slf4j.Logger;

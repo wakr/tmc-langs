@@ -3,7 +3,9 @@ package fi.helsinki.cs.tmc.langs.java.gradle;
 import fi.helsinki.cs.tmc.langs.abstraction.ValidationError;
 import fi.helsinki.cs.tmc.langs.abstraction.ValidationResult;
 import fi.helsinki.cs.tmc.langs.domain.CompileResult;
+import fi.helsinki.cs.tmc.langs.domain.RunResult;
 import fi.helsinki.cs.tmc.langs.utils.TestUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -58,6 +60,22 @@ public class GradlePluginTest {
         Path project = TestUtils.getPath(getClass(), "gradle_not_compiling");
         CompileResult result = gradlePlugin.build(project);
         assertEquals("Compile status should be 1 when build fails", 1, result.getStatusCode());
+    }
+
+    @Test
+    public void testRunTestsWhenBuildFailing() {
+        Path project = TestUtils.getPath(getClass(), "gradle_not_compiling");
+        RunResult runResult = gradlePlugin.runTests(project);
+        assertEquals(RunResult.Status.COMPILE_FAILED, runResult.status);
+    }
+
+    @Ignore
+    @Test
+    public void testGradleProjectWithFailingTestsCompilesAndFailsTests() {
+        Path path = TestUtils.getPath(getClass(), "gradle_compiling");
+        RunResult result = gradlePlugin.runTests(path);
+
+        assertEquals(RunResult.Status.TESTS_FAILED, result.status);
     }
 
 

@@ -2,10 +2,14 @@ apply plugin: 'java'
 
 repositories {
     mavenCentral()
+    maven {
+        url "http://maven.testmycode.net/nexus/content/groups/public"
+    }
 }
 
 dependencies {
     compile 'org.slf4j:slf4j-api:1.7.5'
     testCompile 'junit:junit:4.11'
+    testCompile group: 'fi.helsinki.cs.tmc', name: 'edu-test-utils', version: '0.4.1'
 }
 
