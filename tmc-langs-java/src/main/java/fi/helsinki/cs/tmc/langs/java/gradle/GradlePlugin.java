@@ -8,12 +8,15 @@ import fi.helsinki.cs.tmc.langs.java.ClassPath;
 import fi.helsinki.cs.tmc.langs.java.exception.TestRunnerException;
 import fi.helsinki.cs.tmc.langs.java.exception.TestScannerException;
 import fi.helsinki.cs.tmc.langs.java.maven.MavenStudentFilePolicy;
+import fi.helsinki.cs.tmc.langs.java.testrunner.TestRunner;
+import fi.helsinki.cs.tmc.langs.java.testrunner.TestRunnerMain;
 import fi.helsinki.cs.tmc.langs.java.testscanner.TestScanner;
 
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
 
+import org.gradle.tooling.TestLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +85,6 @@ public class GradlePlugin extends AbstractJavaPlugin {
 
     private void runBuild(ProjectConnection connection, ByteArrayOutputStream outBuf, ByteArrayOutputStream errBuf) {
         BuildLauncher build = connection.newBuild();
-
         build.forTasks("clean", "build");
         build.withArguments("-x", "test");
 
@@ -127,6 +129,8 @@ public class GradlePlugin extends AbstractJavaPlugin {
 
         System.out.println(new String(outBuf.toByteArray()));
         System.out.println(new String(errBuf.toByteArray()));
+
+
 
 
         if (buildResult != 0) {

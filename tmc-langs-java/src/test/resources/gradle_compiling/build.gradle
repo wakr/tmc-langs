@@ -1,15 +1,25 @@
 apply plugin: 'java'
 
-repositories {
-    mavenCentral()
-    maven {
-        url "http://maven.testmycode.net/nexus/content/groups/public"
-    }
-}
+group = 'fi.helsinki.cs'
+version = '0.1-SNAPSHOT'
 
 dependencies {
-    compile 'org.slf4j:slf4j-api:1.7.5'
+    compile 'commons-lang:commons-lang:2.3'
     testCompile 'junit:junit:4.11'
     testCompile group: 'fi.helsinki.cs.tmc', name: 'edu-test-utils', version: '0.4.1'
 }
 
+repositories {
+    flatDir {
+        dirs 'lib'
+    }
+    mavenCentral()
+    mavenLocal()
+    maven {
+        url "http://maven.testmycode.net/nexus/content/repositories/releases/"
+    }
+}
+
+task tmcTest << {
+    println "Hello"
+}

@@ -15,8 +15,4 @@ public class PersonTest {
         assertEquals("Bye", new Person().sayBye());
     }
 
-    @Test
-    public void testFailBye() {
-        assertEquals("", new Person().sayBye());
-    }
 }
