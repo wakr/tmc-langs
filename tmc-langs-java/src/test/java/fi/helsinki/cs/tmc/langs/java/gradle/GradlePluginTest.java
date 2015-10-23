@@ -69,10 +69,10 @@ public class GradlePluginTest {
         assertEquals(RunResult.Status.COMPILE_FAILED, runResult.status);
     }
 
-    @Ignore
+    @Ignore("Test-running not yet working.")
     @Test
     public void testGradleProjectWithFailingTestsCompilesAndFailsTests() {
-        Path path = TestUtils.getPath(getClass(), "gradle_compiling");
+        Path path = TestUtils.getPath(getClass(), "gradle_failing_tests");
         RunResult result = gradlePlugin.runTests(path);
 
         assertEquals(RunResult.Status.TESTS_FAILED, result.status);

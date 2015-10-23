@@ -8,15 +8,12 @@ import fi.helsinki.cs.tmc.langs.java.ClassPath;
 import fi.helsinki.cs.tmc.langs.java.exception.TestRunnerException;
 import fi.helsinki.cs.tmc.langs.java.exception.TestScannerException;
 import fi.helsinki.cs.tmc.langs.java.maven.MavenStudentFilePolicy;
-import fi.helsinki.cs.tmc.langs.java.testrunner.TestRunner;
-import fi.helsinki.cs.tmc.langs.java.testrunner.TestRunnerMain;
 import fi.helsinki.cs.tmc.langs.java.testscanner.TestScanner;
 
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
 
-import org.gradle.tooling.TestLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +38,9 @@ public class GradlePlugin extends AbstractJavaPlugin {
 
     @Override
     protected ClassPath getProjectClassPath(Path path) throws IOException {
-        // build/classes/*
-        return null;
+        ClassPath classPath = new ClassPath(path.toAbsolutePath());
+        classPath.addDirAndContents(path.resolve("build"));
+        return classPath;
     }
 
     @Override
@@ -56,7 +54,7 @@ public class GradlePlugin extends AbstractJavaPlugin {
         ByteArrayOutputStream outBuf = new ByteArrayOutputStream();
         ByteArrayOutputStream errBuf = new ByteArrayOutputStream();
 
-        int buildResult = getBuildResult(connection, outBuf, errBuf);
+        int buildResult = getBuildResult(connection, outBuf, errBuf, "build");
 
         if (buildResult == 0) {
             log.info("Built maven project at {}", projectRootPath);
@@ -67,11 +65,12 @@ public class GradlePlugin extends AbstractJavaPlugin {
         return new CompileResult(buildResult, outBuf.toByteArray(), errBuf.toByteArray());
     }
 
-    private int getBuildResult(ProjectConnection connection, ByteArrayOutputStream outBuf, ByteArrayOutputStream errBuf) {
+    private int getBuildResult(
+            ProjectConnection connection, ByteArrayOutputStream outBuf, ByteArrayOutputStream errBuf, String option) {
         int buildResult = 1;
 
         try {
-            runBuild(connection, outBuf, errBuf);
+            runBuild(connection, outBuf, errBuf, option);
             buildResult = 0;
         } catch (Exception ex){
             buildResult = 1;
@@ -83,10 +82,18 @@ public class GradlePlugin extends AbstractJavaPlugin {
         return buildResult;
     }
 
-    private void runBuild(ProjectConnection connection, ByteArrayOutputStream outBuf, ByteArrayOutputStream errBuf) {
+    private void runBuild(ProjectConnection connection, ByteArrayOutputStream outBuf, ByteArrayOutputStream errBuf, String option) {
         BuildLauncher build = connection.newBuild();
-        build.forTasks("clean", "build");
-        build.withArguments("-x", "test");
+
+        if(option.equals("build")){
+            build.forTasks("clean", "build");
+            build.withArguments("-x", "test");
+        }
+        else if(option.equals("test")){
+            build.forTasks("clean", "test");
+            build.withArguments("--info");
+        }
+
 
         build.setStandardOutput(outBuf);
         build.setStandardError(errBuf);
@@ -104,34 +111,11 @@ public class GradlePlugin extends AbstractJavaPlugin {
 
         ByteArrayOutputStream outBuf = new ByteArrayOutputStream();
         ByteArrayOutputStream errBuf = new ByteArrayOutputStream();
-        int buildResult = 1;
 
-        try {
-            BuildLauncher build = connection.newBuild();
+        int buildResult = getBuildResult(connection, outBuf, errBuf, "test");
 
-            build.forTasks("clean", "test");
-
-            build.setStandardOutput(outBuf);
-            build.setStandardError(errBuf);
-            build.run();
-
-
-
-
-            buildResult = 0;
-        } catch (Exception ex){
-            buildResult = 1;
-        } finally {
-            if(connection != null) {
-                connection.close();
-            }
-        }
-
-        System.out.println(new String(outBuf.toByteArray()));
-        System.out.println(new String(errBuf.toByteArray()));
-
-
-
+        //System.out.println(new String(outBuf.toByteArray()));
+        //System.out.println(new String(errBuf.toByteArray()));
 
         if (buildResult != 0) {
             log.error("Could not run tests for gradle project at {}", path);
@@ -140,9 +124,6 @@ public class GradlePlugin extends AbstractJavaPlugin {
         else{
             log.info("Successfully ran tests for gradle project at {}", path);
         }
-
-
-
         return path.toAbsolutePath().resolve("test_output.txt").toFile();
     }
 

@@ -1,0 +1,25 @@
+apply plugin: 'java'
+
+group = 'fi.helsinki.cs'
+version = '0.1-SNAPSHOT'
+
+dependencies {
+    compile 'commons-lang:commons-lang:2.3'
+    testCompile 'junit:junit:4.11'
+    testCompile group: 'fi.helsinki.cs.tmc', name: 'edu-test-utils', version: '0.4.1'
+}
+
+repositories {
+    flatDir {
+        dirs 'lib'
+    }
+    mavenCentral()
+    mavenLocal()
+    maven {
+        url "http://maven.testmycode.net/nexus/content/repositories/releases/"
+    }
+}
+
+task tmcTest << {
+    println "Hello"
+}
